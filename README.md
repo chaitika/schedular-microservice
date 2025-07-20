@@ -9,16 +9,15 @@ A lightweight and efficient scheduler microservice that enables users to create,
 ## Installation & Setup
 
 1. **Clone the repository**
-
-   bash
+   ```bash
    git clone git@github.com:chaitika/schedular-microservice.git
    cd scheduler-microservice
-   
+   ```
 
 2. **Install dependencies**
-   bash
+   ```bash
    npm install
-   
+   ```
 
 ## Running the Application
 
@@ -28,20 +27,33 @@ This project includes a convenient Makefile for easy project management.
 
 Start the scheduler microservice backend:
 
-bash
+```bash
 make dev
-
+```
 
 ### Frontend Interface
 
 In a separate terminal, launch the web interface:
 
-bash
+```bash
 make frontend
-
+```
 
 The frontend provides an intuitive interface to:
-
 - Create new scheduled jobs
 - View existing jobs
 - Monitor job status
+
+### API Documentation
+
+Interactive API documentation is available via Swagger UI:
+
+```
+http://localhost:3000/api-docs
+```
+
+The API docs provide:
+- Interactive "Try it out" functionality
+- Request/response examples
+- Schema definitions
+- Pre-filled sample data
