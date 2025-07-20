@@ -1,0 +1,493 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Job Scheduler</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .header {
+        text-align: center;
+        color: white;
+        margin-bottom: 40px;
+      }
+
+      .header h1 {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+      }
+
+      .header p {
+        font-size: 1.1rem;
+        opacity: 0.9;
+      }
+
+      .card {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        margin-bottom: 24px;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #333;
+      }
+
+      .form-group input,
+      .form-group textarea,
+      .form-group select {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e1e5e9;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: border-color 0.2s;
+      }
+
+      .form-group input:focus,
+      .form-group textarea:focus,
+      .form-group select:focus {
+        outline: none;
+        border-color: #667eea;
+      }
+
+      .cron-presets {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 12px;
+        margin-top: 8px;
+      }
+
+      .preset-btn {
+        padding: 8px 12px;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        cursor: pointer;
+        text-align: center;
+        font-size: 12px;
+        transition: all 0.2s;
+      }
+
+      .preset-btn:hover {
+        background: #e9ecef;
+        border-color: #667eea;
+      }
+
+      .btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 600;
+        transition: transform 0.2s;
+      }
+
+      .btn:hover {
+        transform: translateY(-2px);
+      }
+
+      .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .jobs-grid {
+        display: grid;
+        gap: 20px;
+      }
+
+      .job-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        border-left: 4px solid #667eea;
+      }
+
+      .job-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+
+      .job-name {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #333;
+      }
+
+      .job-id {
+        background: #e9ecef;
+        color: #6c757d;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+      }
+
+      .job-details {
+        margin-bottom: 12px;
+      }
+
+      .job-schedule {
+        font-family: "Courier New", monospace;
+        background: #f8f9fa;
+        padding: 8px 12px;
+        border-radius: 6px;
+        display: inline-block;
+        margin-bottom: 8px;
+      }
+
+      .job-times {
+        font-size: 14px;
+        color: #6c757d;
+      }
+
+      .payload-section {
+        margin-top: 12px;
+      }
+
+      .payload-code {
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 6px;
+        padding: 12px;
+        font-family: "Courier New", monospace;
+        font-size: 13px;
+        white-space: pre-wrap;
+        max-height: 150px;
+        overflow-y: auto;
+      }
+
+      .status {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .status.active {
+        background: #d4edda;
+        color: #155724;
+      }
+
+      .status.pending {
+        background: #fff3cd;
+        color: #856404;
+      }
+
+      .error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+        border-radius: 6px;
+        padding: 12px;
+        margin-bottom: 20px;
+      }
+
+      .success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+        border-radius: 6px;
+        padding: 12px;
+        margin-bottom: 20px;
+      }
+
+      .loading {
+        text-align: center;
+        padding: 40px;
+        color: #6c757d;
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          padding: 10px;
+        }
+
+        .header h1 {
+          font-size: 2rem;
+        }
+
+        .cron-presets {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>🚀 Job Scheduler</h1>
+        <p>Create and manage your scheduled jobs</p>
+      </div>
+
+      <!-- Create Job Form -->
+      <div class="card">
+        <h2 style="margin-bottom: 20px">Create New Job</h2>
+
+        <div id="message"></div>
+
+        <form id="jobForm">
+          <div class="form-group">
+            <label for="jobName">Job Name</label>
+            <input
+              type="text"
+              id="jobName"
+              placeholder="Enter job name"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="schedule">Cron Schedule</label>
+            <input
+              type="text"
+              id="schedule"
+              placeholder="*/10 * * * * *"
+              required
+            />
+            <div class="cron-presets">
+              <div class="preset-btn" onclick="setSchedule('*/10 * * * * *')">
+                Every 10 seconds
+              </div>
+              <div class="preset-btn" onclick="setSchedule('* * * * *')">
+                Every minute
+              </div>
+              <div class="preset-btn" onclick="setSchedule('0 * * * *')">
+                Every hour
+              </div>
+              <div class="preset-btn" onclick="setSchedule('0 0 * * *')">
+                Daily at midnight
+              </div>
+              <div class="preset-btn" onclick="setSchedule('0 0 * * 0')">
+                Weekly (Sunday)
+              </div>
+              <div class="preset-btn" onclick="setSchedule('0 0 1 * *')">
+                Monthly
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="payload">Payload (JSON)</label>
+            <textarea
+              id="payload"
+              rows="4"
+              placeholder='{"message": "Hello World!", "type": "notification"}'
+            ></textarea>
+          </div>
+
+          <button type="submit" class="btn" id="submitBtn">Create Job</button>
+        </form>
+      </div>
+
+      <!-- Jobs List -->
+      <div class="card">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+          "
+        >
+          <h2>Existing Jobs</h2>
+          <button
+            class="btn"
+            onclick="loadJobs()"
+            style="padding: 8px 16px; font-size: 14px"
+          >
+            🔄 Refresh
+          </button>
+        </div>
+
+        <div id="jobsList">
+          <div class="loading">Loading jobs...</div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const API_BASE = "http://localhost:3000";
+
+      // Set schedule preset
+      function setSchedule(cronExpression) {
+        document.getElementById("schedule").value = cronExpression;
+      }
+
+      // Show message
+      function showMessage(message, type = "success") {
+        const messageDiv = document.getElementById("message");
+        messageDiv.innerHTML = `<div class="${type}">${message}</div>`;
+        setTimeout(() => {
+          messageDiv.innerHTML = "";
+        }, 5000);
+      }
+
+      // Create job
+      document
+        .getElementById("jobForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const submitBtn = document.getElementById("submitBtn");
+          submitBtn.disabled = true;
+          submitBtn.textContent = "Creating...";
+
+          try {
+            const name = document.getElementById("jobName").value;
+            const schedule = document.getElementById("schedule").value;
+            const payloadText = document.getElementById("payload").value;
+
+            let payload = null;
+            if (payloadText.trim()) {
+              try {
+                payload = JSON.parse(payloadText);
+              } catch (error) {
+                throw new Error("Invalid JSON in payload");
+              }
+            }
+
+            const response = await fetch(`${API_BASE}/jobs`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ name, schedule, payload }),
+            });
+
+            if (!response.ok) {
+              const errorData = await response.json();
+              throw new Error(errorData.error || "Failed to create job");
+            }
+
+            const job = await response.json();
+            showMessage(`Job "${job.name}" created successfully!`, "success");
+
+            // Reset form
+            document.getElementById("jobForm").reset();
+
+            // Reload jobs list
+            loadJobs();
+          } catch (error) {
+            showMessage(error.message, "error");
+          } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Create Job";
+          }
+        });
+
+      // Load jobs
+      async function loadJobs() {
+        const jobsList = document.getElementById("jobsList");
+        jobsList.innerHTML = '<div class="loading">Loading jobs...</div>';
+
+        try {
+          const response = await fetch(`${API_BASE}/jobs`);
+          if (!response.ok) {
+            throw new Error("Failed to fetch jobs");
+          }
+
+          const jobs = await response.json();
+
+          if (jobs.length === 0) {
+            jobsList.innerHTML =
+              '<div style="text-align: center; color: #6c757d; padding: 40px;">No jobs found. Create your first job above!</div>';
+            return;
+          }
+
+          jobsList.innerHTML = `
+                    <div class="jobs-grid">
+                        ${jobs
+                          .map(
+                            (job) => `
+                            <div class="job-card">
+                                <div class="job-header">
+                                    <div class="job-name">${escapeHtml(job.name)}</div>
+                                    <div class="job-id">ID: ${job.id}</div>
+                                </div>
+                                
+                                <div class="job-details">
+                                    <div>
+                                        <strong>Schedule:</strong> 
+                                        <span class="job-schedule">${escapeHtml(job.schedule)}</span>
+                                        <span class="status ${job.nextRun ? "active" : "pending"}">
+                                            ${job.nextRun ? "Active" : "Pending"}
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="job-times">
+                                        <div><strong>Last Run:</strong> ${job.lastRun ? new Date(job.lastRun).toLocaleString() : "Never"}</div>
+                                        <div><strong>Next Run:</strong> ${job.nextRun ? new Date(job.nextRun).toLocaleString() : "Not scheduled"}</div>
+                                    </div>
+                                </div>
+
+                                ${
+                                  job.payload
+                                    ? `
+                                    <div class="payload-section">
+                                        <strong>Payload:</strong>
+                                        <div class="payload-code">${JSON.stringify(job.payload, null, 2)}</div>
+                                    </div>
+                                `
+                                    : ""
+                                }
+                            </div>
+                        `,
+                          )
+                          .join("")}
+                    </div>
+                `;
+        } catch (error) {
+          jobsList.innerHTML = `<div class="error">Error loading jobs: ${error.message}</div>`;
+        }
+      }
+
+      // Utility function to escape HTML
+      function escapeHtml(text) {
+        const div = document.createElement("div");
+        div.textContent = text;
+        return div.innerHTML;
+      }
+
+      // Load jobs on page load
+      loadJobs();
+
+      // Auto-refresh jobs every 30 seconds
+      setInterval(loadJobs, 30000);
+    </script>
+  </body>
+</html>
